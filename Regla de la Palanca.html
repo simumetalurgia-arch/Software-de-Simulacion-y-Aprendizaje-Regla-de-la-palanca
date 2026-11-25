@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software de Simulación y Aprendizaje | Regla de la Palanca</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Regla universal para eliminar el scroll horizontal y asegurar ancho */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #0033A0;
+            --secondary: #3b8226;
+            --bg: #f4f7f6;
+            --text: #333;
+            --panel: #ffffff;
+            --border: #ccc;
+            --c1-color: #007bff;
+            --c2-color: #ff4757;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* HEADER Y NAVEGACIÓN CONSTANTE */
+        header {
+            background: var(--primary);
+            padding: 20px 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            text-align: center;
+            width: 100%;
+        }
+
+        header h1 {
+            color: white;
+            margin: 0 0 15px 0;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        nav { 
+            display: flex; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+            gap: 10px;
+        }
+
+        nav button { 
+            background: transparent; 
+            border: 2px solid transparent; 
+            color: white; 
+            font-size: 16px;
+            font-weight: bold;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        nav button:hover, nav button.active {
+            background: rgba(255,255,255,0.2);
+            border-color: white;
+        }
+
+        /* PIE DE PÁGINA CONSTANTE (RESTAURADO) */
+        footer {
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+            font-size: 14px;
+            box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        footer p { margin: 0; }
+
+        /* CONTENEDOR PRINCIPAL QUE OCUPA EL 100% DEL ANCHO */
+        main {
+            flex: 1;
+            padding: 20px;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .tab-content { display: none; animation: fadeIn 0.4s; width: 100%; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ESTÉTICA DE LA PANTALLA DE INICIO */
+        .welcome-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-top: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 40px 50px;
+            text-align: center;
+            max-width: 1000px;
+            margin: 40px auto;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .welcome-card i.main-icon {
+            font-size: 50px;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .welcome-card h2 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 15px;
+            margin-top: 0;
+        }
+
+        .welcome-card p {
+            color: #475569;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .feature-item {
+            background: #f8fafc;
+            padding: 25px 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--secondary);
+        }
+
+        .feature-item i {
+            font-size: 28px;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .feature-item h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        .feature-item p {
+            font-size: 13.5px;
+            margin: 0;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .start-btn {
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-teoria { background-color: #007bff; }
+        .btn-teoria:hover { background-color: #0056b3; }
+        .btn-simulador { background-color: var(--secondary); }
+        .btn-simulador:hover { background-color: #2d661e; }
+        .btn-manual { background-color: #64748b; }
+        .btn-manual:hover { background-color: #475569; }
+
+        /* ESTÉTICA DEL MANUAL DE USO Y TEORÍA */
+        .manual-header {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+        
+        .manual-header h2 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .manual-header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .manual-timeline {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        .manual-step {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+            border-left: 6px solid var(--primary);
+            position: relative;
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .manual-step h3 {
+            color: var(--primary);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .manual-step p {
+            color: #475569;
+            line-height: 1.6;
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .manual-step ul, .theory-card ul {
+            color: #475569;
+            line-height: 1.6;
+            margin-left: 20px;
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+        }
+
+        .manual-step li, .theory-card li { margin-bottom: 12px; }
+
+        .step-badge {
+            background: var(--secondary);
+            color: white;
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(59, 130, 38, 0.4);
+            flex-shrink: 0;
+        }
+
+        .manual-note {
+            background: #f8fafc;
+            border-left: 4px solid #0ea5e9;
+            padding: 18px;
+            border-radius: 6px;
+            margin-top: 20px;
+            color: #0369a1;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .manual-note.warning {
+            background: #fffbeb;
+            border-left-color: #f59e0b;
+            color: #92400e;
+        }
+
+        .manual-note.danger {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+            color: #b91c1c;
+        }
+
+        .manual-note i {
+            font-size: 1.3rem;
+            margin-top: 2px;
+        }
+
+        /* NAVEGACIÓN INTERNA DE TEORÍA */
+        .theory-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 0 20px;
+            max-width: 1100px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .theory-tab-btn {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: bold;
+            padding: 12px 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .theory-tab-btn:hover {
+            border-color: var(--primary);
+            background: #e0e7ff;
+        }
+
+        .theory-tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0, 51, 160, 0.2);
+        }
+
+        .theory-section-content {
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+
+        .theory-section-content.active {
+            display: block;
+        }
+
+        .theory-card {
+            background: #ffffff;
+            padding: 35px 45px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+            margin: 0 auto 40px auto;
+            max-width: 1100px;
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            border-left: 6px solid var(--primary);
+        }
+
+        .theory-card h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theory-card p {
+            color: #475569;
+            line-height: 1.7;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        
+        .theory-image-container {
+            margin: 30px 0;
+            text-align: center;
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .theory-image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .theory-image-caption {
+            margin-top: 15px;
+            font-size: 0.95rem;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        /* DISEÑO DE ECUACIONES HTML COMPATIBLE */
+        .html-equation-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 25px 0;
+            width: 100%;
+        }
+
+        .html-equation-container {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.25rem;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            color: var(--primary);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .html-fraction {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            padding: 0 5px;
+        }
+
+        .html-numerator {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 2px;
+        }
+
+        .html-denominator {
+            padding-top: 2px;
+        }
+
+        /* Estilos Generales del Simulador */
+        .sim-container {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .panel {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .panel h3 {
+            margin-top: 0;
+            color: var(--primary);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        
+        .panel label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #475569;
+        }
+
+        .input-row { display: flex; gap: 12px; }
+        .input-row > div { flex: 1; }
+
+        .panel input[type="number"], .panel input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .panel input[type="number"]:focus, .panel input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.15);
+            background-color: #ffffff;
+        }
+
+        .panel .btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 15px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            margin-bottom: 10px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+        }
+
+        .panel .btn i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            color: #64748b;
+            transition: color 0.2s;
+        }
+
+        .panel .btn:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+        }
+
+        .panel .btn.active {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+            box-shadow: 0 4px 12px rgba(59, 130, 38, 0.3);
+        }
+        
+        .panel .btn.active i { color: white; }
+
+        .panel .btn.danger {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fecaca;
+            margin-top: 25px;
+            justify-content: center;
+        }
+
+        .panel .btn.danger i { color: #ef4444; }
+
+        .panel .btn.danger:hover {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        .panel .btn.danger:hover i { color: white; }
+
+        .panel .drop-zone {
+            border: 2px dashed #cbd5e1;
+            padding: 25px 15px;
+            text-align: center;
+            border-radius: 12px;
+            background: #f8fafc;
+            cursor: pointer;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            color: #64748b;
+            font-weight: 600;
+            display: block;
+        }
+
+        .panel .drop-zone:hover, .panel .drop-zone.dragover {
+            background: #f0f9ff;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .panel .input-group-c {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .canvas-wrapper {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+            min-height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+            cursor: crosshair;
+        }
+
+        .lever-container {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid var(--border);
+            padding: 12px;
+            text-align: center;
+        }
+        th { background: var(--primary); color: white; font-weight: 600; }
+
+        .math-formulas {
+            margin-top: 25px;
+            padding: 20px 25px;
+            background: #ffffff;
+            border-left: 5px solid var(--secondary);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .math-formulas h4 {
+            margin-top: 0;
+            color: var(--secondary);
+            font-size: 16px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .math-content {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #334155;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Software de Simulación y Aprendizaje | Regla de la Palanca</h1>
+        <nav>
+            <button id="nav-inicio" class="active" onclick="openTab('inicio')"><i class="fa-solid fa-home"></i> Inicio</button>
+            <button id="nav-teoria" onclick="openTab('teoria')"><i class="fa-solid fa-book"></i> Teoría</button>
+            <button id="nav-simulador" onclick="openTab('simulador')"><i class="fa-solid fa-flask"></i> Simulador</button>
+            <button id="nav-manual" onclick="openTab('manual')"><i class="fa-solid fa-info-circle"></i> Manual de Uso</button>
+        </nav>
+    </header>
+
+    <main>
+        <div id="inicio" class="tab-content active">
+            <div class="welcome-card">
+                <i class="fa-solid fa-scale-balanced main-icon"></i>
+                <h2>Bienvenido al Entorno Virtual</h2>
+                <p>Este simulador interactivo está diseñado para facilitar el análisis de diagramas de fase binarios. Podrás cargar gráficos reales de la literatura, calibrar las escalas de temperatura y composición, y determinar instantáneamente las fracciones másicas y químicas de las fases conjugadas mediante la Regla de la Palanca, acompañado de su desglose termodinámico y matemático paso a paso.</p>
+                
+                <div style="display: flex; justify-content: center; gap: 15px; margin-top: 25px; flex-wrap: wrap;">
+                    <button class="start-btn btn-teoria" onclick="openTab('teoria')"><i class="fa-solid fa-book-open"></i> Ir a la Teoría</button>
+                    <button class="start-btn btn-simulador" onclick="openTab('simulador')"><i class="fa-solid fa-desktop"></i> Abrir Simulador</button>
+                    <button class="start-btn btn-manual" onclick="openTab('manual')"><i class="fa-solid fa-clipboard-list"></i> Manual de Uso</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="teoria" class="tab-content">
+            <div class="manual-header">
+                <h2><i class="fa-solid fa-book-open-reader"></i> Fundamentos Termodinámicos y Metalúrgicos</h2>
+                <p>Un recorrido exhaustivo por los principios físicos que rigen el equilibrio de fases, el desarrollo microestructural y el uso analítico de la Regla de la Palanca.</p>
+            </div>
+
+            <div class="theory-nav">
+                <button class="theory-tab-btn active" onclick="openTheoryTab('ts1', this)">1. Introducción</button>
+                <button class="theory-tab-btn" onclick="openTheoryTab('ts2', this)">2. Regla de Gibbs</button>
+                <button class="theory-tab-btn" onclick="openTheoryTab('ts3', this)">3. Soluciones Sólidas</button>
+                <button class="theory-tab-btn" onclick="openTheoryTab('ts4', this)">4. Regla de la Palanca</button>
+                <button class="theory-tab-btn" onclick="openTheoryTab('ts5', this)">5. Reacciones Invariantes</button>
+                <button class="theory-tab-btn" onclick="openTheoryTab('ts6', this)">6. Microestructuras</button>
+                <button class="theory-tab-btn" onclick="openTheoryTab('ts7', this)">7. Limitaciones</button>
+            </div>
+
+            <div id="ts1" class="theory-section-content active">
+                <div class="theory-card">
+                    <h2><span class="step-badge">1</span> Introducción a los Diagramas de Fase y Termodinámica</h2>
+                    <p>En el campo de la ciencia e ingeniería de materiales, la predicción del comportamiento de una aleación frente a los cambios térmicos es el pilar central del diseño metalúrgico. Un diagrama de fases, también conocido como diagrama de equilibrio o diagrama constitucional, es fundamentalmente un mapa gráfico que nos revela qué fases (estados de agregación o estructuras cristalinas específicas) son termodinámicamente estables en un sistema material bajo condiciones específicas de temperatura, presión y composición química.</p>
+                    
+                    <p>Para comprender la naturaleza de estos diagramas, es imperativo definir tres conceptos básicos: <strong>Sistema</strong>, <strong>Componente</strong> y <strong>Fase</strong>. Un <em>sistema</em> se refiere a una porción del universo aislada para su estudio, que en metalurgia generalmente corresponde a un cuerpo de aleación específica. Los <em>componentes</em> son los elementos puros o compuestos químicos definidos que conforman la aleación (por ejemplo, Hierro y Carbono en el sistema Hierro-Carbono, o Cobre y Níquel en el sistema Cobre-Níquel). Finalmente, una <em>fase</em> se define como una porción homogénea de un sistema que posee características físicas y químicas uniformes, y que está separada de otras partes del sistema por fronteras o interfaces físicas bien definidas.</p>
+                    
+                    <p>La construcción matemática y física de los diagramas de fases no es un acto empírico arbitrario; está cimentado sólidamente en los principios de la termodinámica. Todo sistema en la naturaleza tiende a evolucionar de manera espontánea hacia un estado en el cual su nivel de energía es mínimo. En sistemas a presión y temperatura constantes, esta energía se cuantifica mediante la <strong>Energía Libre de Gibbs (G)</strong>, definida por la ecuación fundamental:</p>
+
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>G = H - T &middot; S</em></span>
+                        </div>
+                    </div>
+
+                    <p>donde <em>H</em> es la entalpía (el contenido de calor interno), <em>T</em> es la temperatura absoluta en Kelvin y <em>S</em> es la entropía (la medida del desorden atómico del sistema). Un sistema alcanzará el equilibrio termodinámico estricto cuando su Energía Libre de Gibbs sea mínima (cambio neto de <em>dG = 0</em>).</p>
+
+                    <div class="theory-image-container">
+                        <img src="https://drive.google.com/thumbnail?id=1Xr-wnU5fhh3AuSuEwPmeY-hBunYzLKaA&sz=w1000" alt="Diagrama de Fase Cu-Ni">
+                        <div class="theory-image-caption">
+                            <strong>Figura 1.</strong> Explicación de la línea Liquidus y Solidus utilizando el diagrama binario isomorfo del sistema Cobre-Níquel (Cu-Ni). <br><em>Tomado de: Ciencia e Ingeniería de Materiales, Askeland et al.</em>
+                        </div>
+                    </div>
+
+                    <p>A medida que modificamos la temperatura de una aleación, los términos de entalpía y entropía de las fases líquidas y sólidas fluctúan de manera desigual. A altas temperaturas, el término entrópico (<em>-T &middot; S</em>) se vuelve dominante; dado que los líquidos poseen una entropía considerablemente mayor que los sólidos debido a su desorden atómico estructural, la energía libre del líquido desciende drásticamente, volviéndolo la fase más estable. Al disminuir la temperatura, el término entálpico gana relevancia, provocando que la energía libre de la fase sólida (que tiene un arreglo atómico de menor energía interna) cruce por debajo de la del líquido, impulsando la solidificación.</p>
+                    
+                    <p>Por ende, las líneas que observamos en los diagramas de fase (como las líneas de <em>liquidus</em> y <em>solidus</em>) representan geométricamente los puntos geométricos donde las curvas de Energía Libre de Gibbs de dos o más fases se intersecan, implicando que ambas fases tienen idéntica energía libre y pueden coexistir en perfecto equilibrio termodinámico. Comprender este principio es vital para el ingeniero, ya que establece que los diagramas de fase muestran la "intención" térmica de la naturaleza a tiempos infinitos, dictando los límites de los tratamientos térmicos industriales.</p>
+                </div>
+            </div>
+
+            <div id="ts2" class="theory-section-content">
+                <div class="theory-card">
+                    <h2><span class="step-badge">2</span> La Regla de las Fases de Gibbs y las Variables de Estado</h2>
+                    <p>Si la Energía Libre de Gibbs explica por qué ocurren las transformaciones de fase, la <strong>Regla de las Fases de Gibbs</strong> proporciona el modelo matemático restrictivo que gobierna cuántas fases pueden coexistir simultáneamente bajo un conjunto dado de condiciones de laboratorio. Deducida por el físico J. Willard Gibbs en el siglo XIX, esta elegante ecuación relaciona directamente el número de componentes de un sistema con la cantidad de fases presentes y los grados de libertad disponibles.</p>
+                    
+                    <p>La ecuación general de la regla de las fases se expresa clásicamente como:</p>
+
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>P + F = C + 2</em></span>
+                        </div>
+                    </div>
+
+                    <p>donde <strong>P</strong> es el número de fases presentes en equilibrio; <strong>C</strong> es el número de componentes químicos químicamente independientes del sistema; y <strong>F</strong> representa los grados de libertad o la varianza del sistema. El número '2' en la ecuación clásica hace referencia a las dos variables intensivas de estado que típicamente alteran el equilibrio: la Temperatura y la Presión.</p>
+
+                    <p>Los <em>grados de libertad</em> (<em>F</em>) se interpretan como el número de variables termodinámicas externas que pueden modificarse simultáneamente de manera independiente sin provocar la aparición o desaparición de una fase. En aplicaciones metalúrgicas prácticas, las transformaciones de estado y los tratamientos térmicos de aleaciones se llevan a cabo casi exclusivamente a presión atmosférica constante (1 atm). Dado que la presión ya no es una variable libre, el término '2' de la ecuación de Gibbs se reduce a '1', resultando en la <strong>Regla de las Fases Condensada</strong>, de uso universal en diagramas binarios metálicos:</p>
+
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>P + F = C + 1</em></span>
+                        </div>
+                    </div>
+                    
+                    <p>Analicemos la aplicación de esta ecuación condensada en un diagrama binario isotérmico de solubilidad total (<em>C = 2</em>). Si observamos una región monofásica (por ejemplo, el campo de austenita pura al 100%), el número de fases es <em>P = 1</em>. Sustituyendo en la ecuación, obtenemos <em>1 + F = 2 + 1</em>, lo que implica que <em>F = 2</em>. Esto significa que el sistema es bivariante: el operador del horno tiene la libertad de alterar tanto la temperatura como la composición de la aleación dentro de cierto rango sin destruir la fase austenítica.</p>
+
+                    <p>Por el contrario, si la aleación penetra en una zona bifásica (líquido + sólido, o ferrita + cementita), entonces <em>P = 2</em>. El cálculo nos arroja <em>2 + F = 2 + 1</em>, es decir, <em>F = 1</em> (sistema univariante). Esto tiene una profunda implicación física: si el ingeniero decide fijar la temperatura de trabajo, las composiciones químicas de las fases líquida y sólida que coexisten quedan automáticamente impuestas por la naturaleza a lo largo de las fronteras de fase, sin que el operador pueda alterarlas independientemente. Finalmente, cuando ocurren reacciones isotérmicas de tres fases (como la reacción eutéctica donde <em>P = 3</em>), los grados de libertad caen a cero (<em>F = 0</em>). Estos puntos invariantes dictan que la reacción sólo puede ocurrir a una temperatura específica y a una concentración global matemáticamente bloqueada.</p>
+                </div>
+            </div>
+
+            <div id="ts3" class="theory-section-content">
+                <div class="theory-card">
+                    <h2><span class="step-badge">3</span> Soluciones Sólidas y las Reglas de Hume-Rothery</h2>
+                    <p>Cuando mezclamos dos metales en estado líquido, la agitación térmica y la alta entropía garantizan, en la mayoría de los casos, una mezcla íntima y perfecta, conformando una única fase líquida. Sin embargo, al solidificar la mezcla, el comportamiento atómico puede variar drásticamente. En ocasiones, la red cristalina de un metal es capaz de acomodar átomos de un segundo elemento sin perder su integridad estructural, formando lo que se conoce como una <strong>solución sólida</strong>. La capacidad de un material anfitrión (solvente) para disolver a un elemento huésped (soluto) es el principio fundamental detrás del endurecimiento por aleación y determina la arquitectura de los diagramas de fase.</p>
+
+                    <p>Las soluciones sólidas se clasifican en dos grandes familias cristalográficas: sustitucionales e intersticiales. En las <em>soluciones sólidas sustitucionales</em>, los átomos del elemento soluto reemplazan directamente a los átomos del solvente en las posiciones regulares de la red cristalina (nodos de la matriz). Un ejemplo clásico es la aleación de Cobre y Níquel o el Latón (Cobre y Zinc). Por el contrario, en las <em>soluciones sólidas intersticiales</em>, los átomos del soluto son lo suficientemente minúsculos como para deslizarse en los intersticios o "huecos" vacíos que existen entre los átomos de la red principal. El ejemplo más crítico en la ingeniería estructural es la disolución de átomos de Carbono en los intersticios octaédricos de la red de Hierro para formar las fases de los aceros (Ferrita de tipo alfa y Austenita de tipo gamma).</p>
+
+                    <div class="theory-image-container">
+                        <img src="https://drive.google.com/thumbnail?id=1VW53BSsrEXmOVd8_PHsFQOT8StSCb8RC&sz=w1000" alt="Diagrama NiO-MgO">
+                        <div class="theory-image-caption">
+                            <strong>Figura 2.</strong> Diagrama de fase binario del sistema cerámico isomorfo Óxido de Níquel (NiO) y Óxido de Magnesio (MgO), ilustrando solubilidad sólida total entre cerámicos. <br><em>Tomado de: Ciencia e Ingeniería de Materiales, Askeland et al.</em>
+                        </div>
+                    </div>
+
+                    <p>Para predecir si dos elementos formarán una solución sólida sustitucional de alta solubilidad (o de solubilidad total), los metalurgistas se apoyan en los criterios empíricos postulados por el científico William Hume-Rothery. Estas famosas <strong>Reglas de Hume-Rothery</strong> establecen cuatro requisitos atómicos severos. El primero es el <em>Factor de Tamaño Atómico</em>: la diferencia entre los radios atómicos del solvente y el soluto no debe exceder el 15%. Si el átomo soluto es demasiado grande o demasiado pequeño, inducirá distorsiones elásticas masivas en la red matriz, disparando la energía de deformación hasta provocar el rechazo termodinámico del soluto (precipitación de una segunda fase).</p>
+                    
+                    <p>El segundo criterio dicta que ambos metales deben poseer la misma <em>Estructura Cristalina</em> en estado puro (por ejemplo, ambos deben ser Cúbicos Centrados en las Caras, FCC, como ocurre con el oro y la plata). Si las estructuras difieren, la red no podrá mantener su simetría a lo largo de todas las composiciones y se verá obligada a transicionar a otra fase. El tercer principio evalúa la <em>Electronegatividad</em>: ambos elementos deben tener electronegatividades similares. Si uno es muy electropositivo y el otro fuertemente electronegativo, tenderán a transferir electrones y reaccionar químicamente para formar un compuesto intermetálico frágil y estequiométrico en lugar de una solución dúctil. Finalmente, el cuarto principio es la <em>Valencia</em>: un metal tenderá a disolver preferentemente a otro metal que posea una valencia superior a la suya, más que a uno con valencia inferior, debido a fenómenos relacionados con el volumen de gas de electrones libres.</p>
+
+                    <p>Cuando los metales violan una o varias de estas reglas de Hume-Rothery, el diagrama de fases mostrará regiones de <em>solubilidad parcial o limitada</em>. En estos diagramas aparecen líneas críticas denominadas líneas de <strong>Solvus</strong>, que delimitan topográficamente el límite de solubilidad en estado sólido en función de la temperatura. Al cruzar una línea de solvus durante el enfriamiento de una aleación, la red del solvente expulsa el exceso de soluto, induciendo la nucleación microscópica de una segunda fase, mecanismo aprovechado industrialmente en los tratamientos térmicos de endurecimiento por precipitación de aluminios aeroespaciales.</p>
+                </div>
+            </div>
+
+            <div id="ts4" class="theory-section-content">
+                <div class="theory-card">
+                    <h2><span class="step-badge">4</span> Derivación Matemática de la Regla de la Palanca</h2>
+                    <p>Cuando el estudio termodinámico determina que un sistema a cierta temperatura y concentración cae dentro de una región donde coexisten dos fases (por ejemplo, una zona de líquido y sólido, o una zona bifásica de fase alfa y fase beta), el ingeniero metalúrgico se enfrenta a una de las interrogantes más críticas del diseño de aleaciones: ¿Qué fracción o porcentaje de mi pieza está en estado líquido y qué porcentaje es sólido endurecido? La respuesta exacta a esta interrogante proviene de un balance riguroso de conservación de masa conocido universalmente como la <strong>Regla de la Palanca</strong>.</p>
+                    
+                    <div class="theory-image-container">
+                        <img src="https://drive.google.com/thumbnail?id=1D5wcz8GEZ3_lBBKXizaxR1Tubw1o2v3K&sz=w1000" alt="Línea de interconexión en Regla de la Palanca">
+                        <div class="theory-image-caption">
+                            <strong>Figura 3.</strong> Diagrama esquemático de un sistema binario hipotético de elementos A y B, explicando el uso de la línea de interconexión (tie-line) entre las fases sólida y líquida para la aplicación de la Regla de la Palanca. <br><em>Tomado de: Ciencia e Ingeniería de Materiales, Askeland et al.</em>
+                        </div>
+                    </div>
+
+                    <p>El primer paso para aplicar este principio es la construcción geométrica de la <em>línea de enlace o isoterma</em> (en inglés, "tie-line"). Esta es una línea perfectamente horizontal trazada en el diagrama a la temperatura de interés, extendiéndose desde la frontera de solubilidad de la fase izquierda hasta la frontera de solubilidad de la fase derecha. El punto donde esta isoterma corta a los límites bifásicos nos dicta, de forma inamovible, la composición química precisa (<em>C<sub>alfa</sub></em> y <em>C<sub>beta</sub></em>) de las dos fases que han segregado en el equilibrio. El punto medio sobre la isoterma, denominado fulcro de la palanca, es la composición química nominal o global de la aleación (<em>C<sub>0</sub></em>), la cual inyectamos inicialmente en el crisol de fusión.</p>
+
+                    <p>La derivación de la regla de la palanca es un ejercicio directo de álgebra de mezclas. Consideremos una aleación binaria con una masa total <em>m<sub>0</sub></em> y una composición global <em>C<sub>0</sub></em>. A cierta temperatura en el campo bifásico, la masa se divide en masa de la fase alfa (<em>m<sub>alfa</sub></em>) y masa de la fase beta (<em>m<sub>beta</sub></em>). Por la ley de conservación de masa total del sistema, sabemos que:</p>
+                    
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>m<sub>0</sub> = m<sub>alfa</sub> + m<sub>beta</sub></em></span>
+                        </div>
+                    </div>
+                    
+                    <p>Dividiendo ambos lados por <em>m<sub>0</sub></em>, obtenemos que la suma de las fracciones másicas relativas (<em>W</em>) debe ser igual a la unidad (o al 100%):</p>
+                    
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>1 = W<sub>alfa</sub> + W<sub>beta</sub></em></span>
+                        </div>
+                    </div>
+                    
+                    <p>El segundo balance se realiza sobre la conservación de la masa del soluto puro (el elemento B). La cantidad total de soluto presente en toda la probeta (<em>W<sub>Total_Soluto</sub> = m<sub>0</sub> &times; C<sub>0</sub></em>) debe ser matemáticamente igual a la suma del soluto secuestrado dentro de la fase alfa más el soluto atrapado en la matriz de la fase beta. Esto se expresa como:</p>
+                    
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>m<sub>0</sub> &middot; C<sub>0</sub> = m<sub>alfa</sub> &middot; C<sub>alfa</sub> + m<sub>beta</sub> &middot; C<sub>beta</sub></em></span>
+                        </div>
+                    </div>
+
+                    <p>Nuevamente, dividiendo toda la expresión por la masa total <em>m<sub>0</sub></em>, la ecuación se transforma en términos de fracciones másicas (<em>W</em>):</p>
+                    
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>C<sub>0</sub> = W<sub>alfa</sub> &middot; C<sub>alfa</sub> + W<sub>beta</sub> &middot; C<sub>beta</sub></em></span>
+                        </div>
+                    </div>
+                    
+                    <p>Como sabemos que <em>W<sub>beta</sub> = 1 - W<sub>alfa</sub></em> a partir de nuestra primera ecuación, podemos sustituir esto en el balance de soluto:</p>
+                    
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>C<sub>0</sub> = W<sub>alfa</sub> &middot; C<sub>alfa</sub> + (1 - W<sub>alfa</sub>) &middot; C<sub>beta</sub></em></span>
+                        </div>
+                    </div>
+                    
+                    <p>Despejando rigurosamente <em>W<sub>alfa</sub></em>, llegamos a la ecuación maestra de la Regla de la Palanca:</p>
+                    
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>W<sub>alfa</sub> = </em></span>
+                            <div class="html-fraction">
+                                <span class="html-numerator"><em>C<sub>beta</sub> - C<sub>0</sub></em></span>
+                                <span class="html-denominator"><em>C<sub>beta</sub> - C<sub>alfa</sub></em></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p>Y por correlación geométrica, la fracción de la fase beta es:</p>
+                    
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>W<sub>beta</sub> = </em></span>
+                            <div class="html-fraction">
+                                <span class="html-numerator"><em>C<sub>0</sub> - C<sub>alfa</sub></em></span>
+                                <span class="html-denominator"><em>C<sub>beta</sub> - C<sub>alfa</sub></em></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p>La genialidad didáctica de esta derivación es su interpretación física. Imagina un columpio de parque. El pivote de equilibrio (el fulcro) se ubica en la composición de la aleación <em>C<sub>0</sub></em>. Si tu aleación <em>C<sub>0</sub></em> se encuentra muy cerca químicamente del extremo de la fase alfa (<em>C<sub>alfa</sub></em>), el brazo opuesto de la palanca (la distancia entre <em>C<sub>0</sub></em> y <em>C<sub>beta</sub></em>) se vuelve extremadamente largo, dictaminando matemáticamente que casi todo el "peso" del sistema está compuesto por la fase alfa. En resumen, la fracción másica de una fase se calcula tomando la longitud del "brazo opuesto" del segmento de isoterma y dividiéndola entre la "longitud total" de la isoterma. Este principio empodera a nuestro simulador interactivo para calcular fases al instante, convirtiéndose en el método predilecto de análisis metalográfico cuantitativo en condiciones isotérmicas.</p>
+                </div>
+            </div>
+
+            <div id="ts5" class="theory-section-content">
+                <div class="theory-card">
+                    <h2><span class="step-badge">5</span> Reacciones Invariantes en Sistemas Binarios</h2>
+                    <p>La topología de los diagramas de fases a menudo exhibe valles profundos, cúspides o líneas perfectamente horizontales donde colisionan múltiples regiones bifásicas. Estas líneas representan isotermas críticas de <strong>Reacciones Invariantes</strong>. Como dedujimos previamente a partir de la Regla de las Fases de Gibbs, cuando en un sistema binario (<em>C = 2</em>) a presión constante coexisten tres fases simultáneamente en equilibrio (<em>P = 3</em>), el número de grados de libertad cae drásticamente a cero (<em>F = 0</em>). En consecuencia, las reacciones invariantes no suceden progresivamente en rangos de temperatura; ocurren abruptamente a una temperatura singular y con composiciones químicas específicas e inmutables, manifestándose experimentalmente como "paradas térmicas" extremas en las curvas de enfriamiento reales de fundición.</p>
+                    
+                    <p>La reacción invariante de solidificación más famosa e industrialmente relevante es la <strong>Reacción Eutéctica</strong> (del griego <em>eutektos</em>, que significa "de fácil fusión"). En este punto termodinámico crítico, una aleación en estado líquido (<em>L</em>) se enfría hasta transformarse simultáneamente y de golpe en dos fases sólidas completamente distintas (<em>alfa</em> y <em>beta</em>). La ecuación de reacción se denota como:</p>
+                    
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>L &rarr; Fase alfa + Fase beta</em></span>
+                        </div>
+                    </div>
+                    
+                    <p>El punto eutéctico representa la temperatura más baja a la cual un sistema de aleación puede mantenerse en estado líquido puro. Las soldaduras eléctricas (Plomo-Estaño) y las fundiciones de hierro y silicio son ejemplos masivos del uso de eutécticos, ya que permiten trabajar a temperaturas de colada bajas, reduciendo el consumo energético en los hornos. A nivel microscópico, el líquido se descompone en un entramado de láminas o placas alternadas finísimas de fase alfa y beta. Este arreglo lamelar ocurre porque los átomos del componente A y del componente B deben redistribuirse masivamente en microsegundos, forzando trayectorias de difusión muy cortas que construyen el patrón de cebras característico.</p>
+
+                    <div class="theory-image-container">
+                        <img src="https://drive.google.com/thumbnail?id=1VW53BSsrEXmOVd8_PHsFQOT8StSCb8RC&sz=w1000" alt="Diagrama de Fase">
+                        <div class="theory-image-caption">
+                            <strong>Figura 4.</strong> Ejemplo de variación en la forma de los diagramas binarios y presencia de reacciones invariantes a temperaturas críticas en el sistema de aleación Ti-Pb. <br><em>Tomado de: Ciencia e Ingeniería de Materiales, Askeland et al.</em>
+                        </div>
+                    </div>
+
+                    <p>La contraparte de estado sólido de la reacción eutéctica es la vital <strong>Reacción Eutectoide</strong>. El prefijo "-oide" indica que la transformación es idéntica en comportamiento, pero la fase madre de origen es un sólido en lugar de un líquido. En esta reacción invariante, una única fase sólida (<em>gamma</em>) se transforma isotérmicamente en dos nuevas fases sólidas segregadas (<em>alfa</em> y <em>beta</em>):</p>
+                    
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>Sólido madre (gamma) &rarr; Sólido alfa + Sólido beta</em></span>
+                        </div>
+                    </div>
+                    
+                    <p>Esta es la piedra angular del acero estructural. A 727 °C, y con una composición exacta del 0.77% de Carbono, la austenita (fase sólida <em>gamma</em>) del acero sufre una reacción eutectoide, segregándose en un intercrecimiento lamelar de ferrita blanda (<em>alfa</em>) y cementita dura e intermetálica (Fe<sub>3</sub>C). Este agregado microestructural rayado, extremadamente resistente debido a sus cientos de interfaces de bloqueo de dislocaciones, se conoce como Perlita.</p>
+
+                    <p>Otras reacciones invariantes críticas dictadas por el cruce de energías libres incluyen la <em>Reacción Peritéctica</em>, donde durante el calentamiento una fase líquida y una fase sólida preexistente reaccionan isotérmicamente en la interfaz envolvente para producir una nueva y única fase sólida (<em>L + alfa &rarr; beta</em>). Estas reacciones suelen ser perezosas e incompletas, ya que la nueva fase beta "envuelve" a los granos de la fase alfa antigua, interrumpiendo el canal de contacto físico con el líquido residual y cortando severamente las tasas de difusión química, lo que deja núcleos no reaccionados que debilitan las propiedades a tracción del material fundido. Cada una de estas líneas invariantes en el diagrama se puede analizar cuantitativamente con el simulador de palanca justo un grado por encima y un grado por debajo de la transformación.</p>
+                </div>
+            </div>
+
+            <div id="ts6" class="theory-section-content">
+                <div class="theory-card">
+                    <h2><span class="step-badge">6</span> Evolución Microestructural durante el Enfriamiento</h2>
+                    <p>Leer los valores de un diagrama de fases binario y aplicar la ecuación algebraica de la regla de la palanca es solo la mitad del trabajo del analista de materiales. El verdadero valor ingenieril se encuentra en la capacidad de predecir o interpretar la <strong>evolución morfológica tridimensional</strong> de la microestructura a medida que los perfiles térmicos atraviesan los diferentes campos cristalográficos, dictaminando si la pieza final sufrirá de fragilidad en los bordes de grano o poseerá alta tenacidad a la fractura por impacto.</p>
+                    
+                    <div class="theory-image-container">
+                        <img src="https://drive.google.com/thumbnail?id=182D5lkLcmFSalFbjKuBcId0AFuYoNNvh&sz=w1000" alt="Curva de enfriamiento Cu-Ni">
+                        <div class="theory-image-caption">
+                            <strong>Figura 5.</strong> Curva de enfriamiento durante la solidificación, mostrando el diagrama Cu-Ni a la izquierda y la curva temperatura-tiempo correspondiente a la derecha. <br><em>Tomado de: Ciencia e Ingeniería de Materiales, Askeland et al.</em>
+                        </div>
+                    </div>
+
+                    <p>Tomemos como ejemplo canónico el lento enfriamiento térmico desde el estado líquido de una aleación isomorfa binaria (como Cobre-Níquel), que posee solubilidad total tanto en estado fundido como sólido. A temperaturas por encima de la línea <em>Liquidus</em>, la aleación es un baño de líquido homogéneo y caótico. Al cruzar la línea de liquidus, la termodinámica dicta la inminente formación de sólidos. Es aquí donde se dispara el fenómeno de la <strong>Nucleación</strong>. Pequeños embriones sólidos, ricos en el metal de mayor punto de fusión (en este caso, Níquel), comienzan a precipitar superando la barrera de activación de energía superficial crítica. Si la regla de la palanca se aplica en este punto de nucleación inicial, revelará un minúsculo brazo opuesto hacia el lado del líquido, corroborando que la fracción másica del primer sólido es apenas fraccionaria (0.1%).</p>
+
+                    <p>A medida que la temperatura desciende inexorablemente a través del valle bifásico líquido+sólido (<em>L + alfa</em>), la isoterma o "tie-line" virtual desciende paralelamente. El punto de composición del líquido resbala gradualmente por la curva de liquidus hacia la izquierda, empobreciéndose de Níquel, mientras que la composición química del núcleo sólido <em>alfa</em> resbala a lo largo de la curva de <em>Solidus</em>. Esta adaptación termodinámica continua de composiciones requiere que los átomos difundan a lo largo del sólido recién formado y del líquido viscoso para mantenerse homogéneos. Cuando finalmente se cruza la barrera de la línea inferior del Solidus, todo el sistema habrá consolidado su última gota de líquido en los espacios intergranulares, y la Regla de la Palanca indicará un 100% de fracción de fase sólida <em>alfa</em>, finalizando el equilibrio térmico primario.</p>
+
+                    <p>En el caso del enfriamiento de aleaciones que poseen reacciones eutécticas o eutectoides (sistemas hipoeutécticos e hipereutécticos), la microestructura evoluciona de manera dual y fascinante. Si fundimos una aleación de plomo y estaño por debajo del punto eutéctico (hipoeutéctica), al cruzar la línea liquidus empezarán a nuclear y crecer inmensos granos o dendritas de una sola fase (fase Proeutéctica), comiendo lentamente el líquido y variando su composición química global, la cual empujamos aplicando la palanca paso a paso. Cuando la temperatura de la mufla desciende hasta los confines exactos del isoterma eutéctico, el remanente de líquido residual sufre un choque termodinámico abrupto e invariante, colapsando instantáneamente en la matriz lamelar de cebras eutécticas puras. La microestructura microscópica resultante es un mar estriado oscuro y claro que aísla grandes islotes circulares de la fase proeutéctica pura generada previamente, conformando un material compuesto in situ de maravillosas propiedades dúctiles y mecánicas, altamente predecible y controlable por la palanca virtual.</p>
+                </div>
+            </div>
+
+            <div id="ts7" class="theory-section-content">
+                <div class="theory-card">
+                    <h2><span class="step-badge">7</span> Limitaciones Cinéticas y Desviaciones del Equilibrio Real</h2>
+                    <p>Pese a la extrema utilidad analítica y predictiva de los diagramas de fase binarios isotérmicos y de la Regla de la Palanca, es crucial que el profesional de la ingeniería metalúrgica en formación entienda el principal talón de Aquiles de esta formulación matemática: <strong>Las Restricciones Cinéticas del Equilibrio</strong>. Los diagramas de fases clásicos, como el ilustre diagrama Hierro-Carbono (Fe-Fe<sub>3</sub>C) que fundamenta la siderurgia global, son estrictamente diagramas de equilibrio a velocidad de calentamiento o enfriamiento infinitamente lentos.</p>
+                    
+                    <p>La validación de la fase que predice la Regla de la Palanca asume tácitamente que el tiempo de permanencia térmica (o de mantenimiento en el horno) es ilimitado. Supone matemáticamente que se le concede al sistema el tiempo suficiente de relajación entrópica para que los átomos puedan realizar difusiones de estado sólido completas (saltos de intersticio y sustitución de vacancias en la red) que aseguren la total homogeneidad química desde el núcleo dendrítico primario hasta la periferia colindante al borde de grano. En la brutal realidad de los talleres industriales y las coladas continuas de acerías masivas, el enfriamiento forzado severo es la norma, y las condiciones de equilibrio ideal jamás se alcanzan en su totalidad técnica, generando la temida <em>Segregación Intergranular o "Coring" (Microsegregación)</em>.</p>
+
+                    <p>Cuando enfriamos aceleradamente una aleación desde una matriz austenítica al rojo vivo (fenómeno conocido en metalurgia física como temple severo en salmuera, agua o aceite agitado), suprimimos violentamente las tasas y vectores de difusión atómica del carbono, superenfriando el material. Al robarle la energía vibracional requerida (<em>k &middot; T</em>) para reacomodar la matriz celular, la estructura cristalina no puede segregarse apaciblemente en perlita blanda (como dictaminaría ingenuamente la ecuación de la palanca). En cambio, la red Cúbica Centrada en las Caras sufre un colapso en estrés constante (corte por cizalladura adimensional atómica a la velocidad de la propagación acústica en metales), transformándose en una red martensítica tetragonal altamente distorsionada, metaestable, agrietada y extremadamente dura. Dado que esta transformación adifusional violenta (Martensita) y de fases intermedias difusivas cortas (Bainita) no corresponden a condiciones de equilibrio, <strong>jamás aparecerán catalogadas en los ejes de un diagrama de fases clásico</strong>.</p>
+
+                    <p>Para solventar esta debilidad termodinámica analítica y abarcar la realidad de variables de la planta de producción, los especialistas extienden y superponen la información isotérmica con la variable empírica del tiempo físico, dando a luz a herramientas complementarias cruciales denominadas <strong>Diagramas de Transformación Isotérmica (Curvas TTT — Tiempo, Temperatura y Transformación)</strong> y diagramas de <strong>Enfriamiento Continuo (CCT)</strong>. El simulador termodinámico avanzado de la Regla de la Palanca funge entonces como el estándar topográfico basal. Indica al diseñador el escenario límite o meta máxima, permitiéndole cuantificar y calificar cuánto porcentaje el proceso de conformado ha forzado a la aleación lejos del reposo y hacia terrenos metaestables industrializados y económicamente explotables.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="manual" class="tab-content">
+            <div class="manual-header">
+                <h2><i class="fa-solid fa-clipboard-list"></i> Guía Completa de Operación del Simulador</h2>
+                <p>Aprende a ejecutar análisis precisos en diagramas de fase binarios mediante la digitalización interactiva de este módulo. Sigue estos pasos cuidadosamente para garantizar el rigor termodinámico en tus resultados.</p>
+            </div>
+            
+            <div class="manual-timeline">
+                
+                <div class="manual-step">
+                    <h3><span class="step-badge">1</span> Carga del Diagrama de Fases (Atlas Metálico)</h3>
+                    <p>El simulador necesita una imagen de referencia (como un diagrama Cu-Ni, Fe-C, o Pb-Sn) para trabajar sobre ella.</p>
+                    <ul>
+                        <li><strong>Método Rápido:</strong> Busca la imagen de tu diagrama en tu computadora, haz clic sobre ella y <strong>arrástrala</strong> hacia el cuadro de líneas punteadas que dice "Arrastra tu imagen o haz clic aquí" en el Panel Izquierdo.</li>
+                        <li><strong>Método Tradicional:</strong> Haz clic en el icono de la nube <i class="fa-solid fa-cloud-arrow-up" style="color: var(--primary);"></i> dentro del recuadro. Se abrirá el explorador de archivos para que selecciones tu imagen en formato JPG, PNG o similar.</li>
+                    </ul>
+                    <div class="manual-note">
+                        <i class="fa-solid fa-lightbulb" style="color: #0284c7;"></i>
+                        <div>
+                            <strong>Consejo:</strong> Procura subir imágenes claras donde los ejes de Composición (X) y Temperatura (Y) sean totalmente rectos y legibles. Esto facilitará enormemente la calibración en el siguiente paso.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="manual-step">
+                    <h3><span class="step-badge">2</span> Calibración Geométrica del Espacio (Ejes X e Y)</h3>
+                    <p>Las imágenes no tienen medidas físicas por defecto; están en "píxeles". Para que el simulador te dé porcentajes y temperaturas reales, debemos enseñarle la escala del diagrama que acabas de subir.</p>
+                    <ul>
+                        <li><strong>Paso 2.1 - Digitar Límites:</strong> Observa tu diagrama. ¿De qué número a qué número va el eje horizontal (Composición)? Digítalo en las casillas <strong>X Mín</strong> y <strong>X Máx</strong>. Haz lo mismo para la temperatura en las casillas <strong>Y Mín</strong> y <strong>Y Máx</strong>.</li>
+                        <li><strong>Paso 2.2 - Fijar Origen (P1):</strong> Haz clic en el botón <i class="fa-solid fa-compress"></i> <strong>Fijar Origen</strong>. El botón se iluminará de verde. Lleva tu ratón a la gráfica y haz clic exactamente en la esquina inferior izquierda (donde se cruzan el mínimo de X y el mínimo de Y).</li>
+                        <li><strong>Paso 2.3 - Fijar Extremo (P2):</strong> Haz clic en <i class="fa-solid fa-expand"></i> <strong>Fijar Extremo</strong> y haz clic en la esquina superior derecha de la gráfica (donde se cruzan el máximo de X y el máximo de Y).</li>
+                    </ul>
+                    <div class="manual-note warning">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <div>
+                            <strong>Modo Rastreo Automático:</strong> Una vez fijados ambos puntos (P1 y P2), ¡la calibración estará completa! Notarás que aparecerá un recuadro flotante en la esquina de la imagen. Al mover tu ratón, este recuadro te mostrará en tiempo real la <em>Temperatura</em> y la <em>Composición</em> exacta de lo que estás apuntando.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="manual-step">
+                    <h3><span class="step-badge">3</span> Trazado Termodinámico Estricto de la Palanca</h3>
+                    <p>Con el gráfico calibrado, entraremos a aplicar la termodinámica. Las reglas establecen que una "línea de enlace" (Isoterma) debe ser perfectamente horizontal. Nuestro simulador fuerza esta regla matemáticamente.</p>
+                    <ul>
+                        <li><strong>Fijar Aleación Global (C0):</strong> Haz clic en <i class="fa-solid fa-bullseye"></i> <strong>Fijar C0</strong>. Busca en el diagrama el punto exacto de tu aleación (composición y temperatura de interés) en una zona bifásica y haz clic. <em>Notarás que el simulador dibuja automáticamente una línea punteada horizontal atravesando todo el gráfico, bloqueando tu ratón en esa isoterma.</em></li>
+                        <li><strong>Nombrar Fases:</strong> En el panel, escribe qué fase está a la izquierda (Ej: "Líquido", "Ferrita") y cuál a la derecha (Ej: "Sólido", "Austenita").</li>
+                        <li><strong>Fijar Límites C1 y C2:</strong> Haz clic en <i class="fa-solid fa-arrow-left-long"></i> <strong>Fijar C1</strong> y marca el límite de solubilidad en la curva de la izquierda. Luego, usa <i class="fa-solid fa-arrow-right-long"></i> <strong>Fijar C2</strong> para marcar la curva de solubilidad a la derecha.</li>
+                    </ul>
+                </div>
+
+                <div class="manual-step">
+                    <h3><span class="step-badge">4</span> Análisis de Fracciones Másicas (Resultados)</h3>
+                    <p>Al hacer tu último clic (C2), el motor matemático del simulador tomará el control e interpolará los datos. ¿Qué debes observar ahora?</p>
+                    <ul>
+                        <li><strong>Esquema del Columpio (Palanca):</strong> Debajo de la gráfica, verás un diagrama físico. El "apoyo" central (fulcro amarillo) representa tu Aleación Global (<em>C<sub>0</sub></em>). Las masas en los extremos (círculos de colores) crecerán proporcionalmente a la cantidad de fase presente.</li>
+                        <li><strong>Tabla de Propiedades:</strong> Aquí encontrarás un resumen limpio con las lecturas de concentración química de los puntos que marcaste y la respectiva Fracción Másica relativa.</li>
+                        <li><strong>Fórmulas Matemáticas:</strong> ¡La caja negra se abre! Se desplegará un cuadro analítico mostrando las fórmulas matemáticas formales (Balances de masa). Podrás ver paso a paso cómo la longitud de la línea de enlace y los brazos opuestos se restan y dividen para arrojar el porcentaje exacto.</li>
+                    </ul>
+                    <div class="manual-note danger">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <div>
+                            <strong>¿Te equivocaste al hacer clic?</strong> No te preocupes. Si marcaste mal un punto o quieres evaluar otra zona de la gráfica, solo debes hacer clic en el botón rojo <i class="fa-solid fa-trash-can"></i> <strong>Limpiar Todo</strong> ubicado en el panel izquierdo. Esto purgará la memoria térmica de los puntos C0, C1 y C2 para que puedas volver a empezar desde el Paso 3.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="simulador" class="tab-content">
+            <div class="sim-container">
+                <div class="panel">
+                    <h3>1. Diagrama de Fase</h3>
+                    <label class="drop-zone" id="dropZone">
+                        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 28px; margin-bottom: 10px;"></i><br>
+                        Arrastra tu imagen o haz clic aquí
+                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                    </label>
+
+                    <h3>2. Calibración del Eje</h3>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>X Mín (%)</label>
+                            <input type="number" id="xMin" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label>X Máx (%)</label>
+                            <input type="number" id="xMax" value="100">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Y Mín (°C)</label>
+                            <input type="number" id="yMin" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Y Máx (°C)</label>
+                            <input type="number" id="yMax" value="1000">
+                        </div>
+                    </div>
+                    <button class="btn" id="btnCalP1" onclick="setMode('calibP1')"><i class="fa-solid fa-compress"></i> Fijar Origen (Inf-Izq)</button>
+                    <button class="btn" id="btnCalP2" onclick="setMode('calibP2')"><i class="fa-solid fa-expand"></i> Fijar Extremo (Sup-Der)</button>
+
+                    <h3 style="margin-top: 25px;">3. Trazado Termodinámico</h3>
+                    <button class="btn" id="btnC0" onclick="setMode('setC0')"><i class="fa-solid fa-bullseye"></i> Fijar Composición Global (C0)</button>
+                    
+                    <div class="input-group-c">
+                        <label>Fase de la Izquierda (C1):</label>
+                        <input type="text" id="nameC1" value="Fase 1" style="margin-bottom: 10px;">
+                        <button class="btn" id="btnC1" onclick="setMode('setC1')"><i class="fa-solid fa-arrow-left-long"></i> Fijar C1</button>
+                        
+                        <label style="margin-top: 15px;">Fase de la Derecha (C2):</label>
+                        <input type="text" id="nameC2" value="Fase 2" style="margin-bottom: 10px;">
+                        <button class="btn" id="btnC2" onclick="setMode('setC2')"><i class="fa-solid fa-arrow-right-long"></i> Fijar C2</button>
+                    </div>
+
+                    <button class="btn danger" onclick="resetSim()"><i class="fa-solid fa-trash-can"></i> Limpiar Todo</button>
+                </div>
+
+                <div class="workspace">
+                    <div class="canvas-wrapper" id="canvasWrapper">
+                        <canvas id="diagramCanvas"></canvas>
+                    </div>
+
+                    <div class="lever-container">
+                        <h3 style="text-align: center; color: var(--primary); margin-top: 0; text-transform: uppercase;">Esquema de Distribución (Palanca en Equilibrio)</h3>
+                        <canvas id="leverCanvas" width="800" height="150" style="width: 100%; border-bottom: 1px solid var(--border);"></canvas>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Propiedad Metalúrgica</th>
+                                    <th id="thC1">Fase Izquierda (C1)</th>
+                                    <th>Aleación Global (C0)</th>
+                                    <th id="thC2">Fase Derecha (C2)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Composición Química</strong></td>
+                                    <td id="resCompC1">-</td>
+                                    <td id="resCompC0">-</td>
+                                    <td id="resCompC2">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fracción Másica</strong></td>
+                                    <td id="resFracC1" style="color: var(--c1-color); font-weight: bold; font-size: 16px;">-</td>
+                                    <td>100%</td>
+                                    <td id="resFracC2" style="color: var(--c2-color); font-weight: bold; font-size: 16px;">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div id="mathFormulas" class="math-formulas">
+                            <h4><i class="fa-solid fa-calculator"></i> Desglose Analítico y Sustitución de Datos</h4>
+                            <div id="mathContent" class="math-content"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        SimuMetalurgia © 2026 <br><br> Desarrollo: <span> Indira Rodriguez Vélasquez & Andrés Felipe Caro Miranda </span>  |  Asesoría: <span>Pro. Ana Emilse Coy Echeverria & Prof. Carlos Andrés Galán Pinilla.</span>
+  
+    </footer>
+
+    <script>
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            
+            const buttons = document.querySelectorAll('nav button');
+            if(tabName === 'inicio') buttons[0].classList.add('active');
+            if(tabName === 'teoria') buttons[1].classList.add('active');
+            if(tabName === 'simulador') buttons[2].classList.add('active');
+            if(tabName === 'manual') buttons[3].classList.add('active');
+            
+            if(tabName === 'simulador') setTimeout(resizeCanvas, 100);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openTheoryTab(sectionId, btnElement) {
+            document.querySelectorAll('.theory-section-content').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.theory-tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(sectionId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        // --- MOTOR DEL SIMULADOR ---
+        const canvas = document.getElementById('diagramCanvas');
+        const ctx = canvas.getContext('2d');
+        const leverCanvas = document.getElementById('leverCanvas');
+        const lCtx = leverCanvas.getContext('2d');
+        
+        let img = new Image();
+        let imageLoaded = false;
+        
+        let state = {
+            mode: 'idle',
+            calib: { p1: null, p2: null, ready: false },
+            points: { c0: null, c1: null, c2: null },
+            mouse: { x: 0, y: 0 }
+        };
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) loadImage(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) loadImage(e.target.files[0]);
+        });
+
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                img.src = event.target.result;
+                img.onload = () => {
+                    imageLoaded = true;
+                    resetSim();
+                    resizeCanvas();
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resizeCanvas() {
+            if(!imageLoaded) return;
+            const wrapper = document.getElementById('canvasWrapper');
+            canvas.width = wrapper.clientWidth;
+            const aspect = img.width / img.height;
+            canvas.height = canvas.width / aspect;
+            draw();
+        }
+
+        function setMode(mode) {
+            if(!imageLoaded) return alert("Por favor sube un diagrama primero.");
+            state.mode = mode;
+            document.querySelectorAll('.panel .btn').forEach(b => b.classList.remove('active'));
+            const map = { 'calibP1': 'btnCalP1', 'calibP2': 'btnCalP2', 'setC0': 'btnC0', 'setC1': 'btnC1', 'setC2': 'btnC2' };
+            if(map[mode]) document.getElementById(map[mode]).classList.add('active');
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            if(!imageLoaded) return;
+            const rect = canvas.getBoundingClientRect();
+            state.mouse.x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            state.mouse.y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+            if (state.points.c0 && (state.mode === 'setC1' || state.mode === 'setC2')) {
+                state.mouse.y = state.points.c0.y;
+            }
+            draw();
+        });
+
+        canvas.addEventListener('click', () => {
+            if(!imageLoaded || state.mode === 'idle') return;
+
+            let xMin = parseFloat(document.getElementById('xMin').value);
+            let xMax = parseFloat(document.getElementById('xMax').value);
+            let yMin = parseFloat(document.getElementById('yMin').value);
+            let yMax = parseFloat(document.getElementById('yMax').value);
+
+            if (state.mode === 'calibP1') {
+                state.calib.p1 = { x: state.mouse.x, y: state.mouse.y };
+                setMode('idle');
+            } else if (state.mode === 'calibP2') {
+                state.calib.p2 = { x: state.mouse.x, y: state.mouse.y };
+                state.calib.ready = true;
+                setMode('idle');
+            } else if (state.calib.ready) {
+                const real = getRealCoords(state.mouse.x, state.mouse.y, xMin, xMax, yMin, yMax);
+                
+                if (state.mode === 'setC0') {
+                    state.points.c0 = { x: state.mouse.x, y: state.mouse.y, rx: real.x };
+                    state.points.c1 = null; state.points.c2 = null; 
+                    setMode('setC1'); 
+                } else if (state.mode === 'setC1') {
+                    if(state.mouse.x > state.points.c0.x) return alert("C1 debe ir a la izquierda de C0.");
+                    state.points.c1 = { x: state.mouse.x, y: state.points.c0.y, rx: real.x };
+                    setMode('setC2'); 
+                } else if (state.mode === 'setC2') {
+                    if(state.mouse.x < state.points.c0.x) return alert("C2 debe ir a la derecha de C0.");
+                    state.points.c2 = { x: state.mouse.x, y: state.points.c0.y, rx: real.x };
+                    setMode('idle');
+                    calcLever();
+                }
+            } else {
+                alert("Debes calibrar el origen y el extremo primero.");
+            }
+            draw();
+        });
+
+        function getRealCoords(px, py, xMin, xMax, yMin, yMax) {
+            if(!state.calib.p1 || !state.calib.p2) return {x:0, y:0};
+            let dx = state.calib.p2.x - state.calib.p1.x;
+            let dy = state.calib.p2.y - state.calib.p1.y;
+            let rx = xMin + ((px - state.calib.p1.x) / dx) * (xMax - xMin);
+            let ry = yMin + ((py - state.calib.p1.y) / dy) * (yMax - yMin);
+            return { x: rx, y: ry };
+        }
+
+        function draw() {
+            if(!imageLoaded) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, state.mouse.y); ctx.lineTo(canvas.width, state.mouse.y);
+            ctx.moveTo(state.mouse.x, 0); ctx.lineTo(state.mouse.x, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]); 
+
+            if (state.points.c0) {
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = '#555';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, state.points.c0.y);
+                ctx.lineTo(canvas.width, state.points.c0.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            if(state.calib.p1) drawPoint(state.calib.p1.x, state.calib.p1.y, '#28a745', 'P1');
+            if(state.calib.p2) drawPoint(state.calib.p2.x, state.calib.p2.y, '#28a745', 'P2');
+
+            if(state.points.c0) drawPoint(state.points.c0.x, state.points.c0.y, '#333', 'C0');
+            if(state.points.c1) drawPoint(state.points.c1.x, state.points.c1.y, 'var(--c1-color)', 'C1');
+            if(state.points.c2) drawPoint(state.points.c2.x, state.points.c2.y, 'var(--c2-color)', 'C2');
+
+            if (state.calib.ready) {
+                let xMin = parseFloat(document.getElementById('xMin').value);
+                let xMax = parseFloat(document.getElementById('xMax').value);
+                let yMin = parseFloat(document.getElementById('yMin').value);
+                let yMax = parseFloat(document.getElementById('yMax').value);
+                let real = getRealCoords(state.mouse.x, state.mouse.y, xMin, xMax, yMin, yMax);
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillRect(10, 10, 180, 60);
+                ctx.strokeStyle = 'var(--primary)';
+                ctx.strokeRect(10, 10, 180, 60);
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 13px sans-serif';
+                ctx.fillText('Comp (X): ' + real.x.toFixed(2) + ' %', 20, 30);
+                ctx.fillText('Temp (Y): ' + real.y.toFixed(1) + ' °C', 20, 55);
+            }
+        }
+
+        function drawPoint(x, y, color, text) {
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI*2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillText(text, x + 10, y - 10);
+        }
+
+        function calcLever() {
+            let p = state.points;
+            if(!p.c0 || !p.c1 || !p.c2) return;
+
+            let c0 = p.c0.rx;
+            let c1 = p.c1.rx;
+            let c2 = p.c2.rx;
+            
+            let total = c2 - c1;
+            let wC1 = ((c2 - c0) / total) * 100;
+            let wC2 = ((c0 - c1) / total) * 100;
+
+            let name1 = document.getElementById('nameC1').value || "Fase C1";
+            let name2 = document.getElementById('nameC2').value || "Fase C2";
+
+            // Imprimir Tabla
+            document.getElementById('thC1').innerText = name1;
+            document.getElementById('thC2').innerText = name2;
+            document.getElementById('resCompC1').innerText = c1.toFixed(2) + ' %';
+            document.getElementById('resCompC0').innerText = c0.toFixed(2) + ' %';
+            document.getElementById('resCompC2').innerText = c2.toFixed(2) + ' %';
+            document.getElementById('resFracC1').innerText = wC1.toFixed(1) + ' %';
+            document.getElementById('resFracC2').innerText = wC2.toFixed(1) + ' %';
+
+            // Dibujar columpio
+            lCtx.clearRect(0,0, leverCanvas.width, leverCanvas.height);
+            let origin = leverCanvas.width / 2;
+            let propC1 = (c0 - c1) / total;
+            let propC2 = (c2 - c0) / total;
+            let xC1 = origin - (propC2 * 300);
+            let xC2 = origin + (propC1 * 300);
+
+            lCtx.fillStyle = '#333';
+            lCtx.beginPath();
+            lCtx.moveTo(origin, leverCanvas.height - 30);
+            lCtx.lineTo(origin - 20, leverCanvas.height);
+            lCtx.lineTo(origin + 20, leverCanvas.height);
+            lCtx.fill();
+            lCtx.fillText("C0", origin - 8, leverCanvas.height - 35);
+
+            lCtx.strokeStyle = '#555';
+            lCtx.lineWidth = 6;
+            lCtx.beginPath();
+            lCtx.moveTo(xC1, leverCanvas.height - 30);
+            lCtx.lineTo(xC2, leverCanvas.height - 30);
+            lCtx.stroke();
+
+            drawMass(xC1, leverCanvas.height - 30, wC1, 'var(--c1-color)', name1);
+            drawMass(xC2, leverCanvas.height - 30, wC2, 'var(--c2-color)', name2);
+
+            // RENDERIZADO DE OPERACIONES CON MAQUETACIÓN HTML PURA (ADIÓS COMPORTAMIENTOS EXTRAÑOS)
+            let c0F = c0.toFixed(2);
+            let c1F = c1.toFixed(2);
+            let c2F = c2.toFixed(2);
+            let lenF = total.toFixed(2);
+
+            let mathHtml = `
+                <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #e2e8f0;">
+                    <strong>1. Longitud de la isoterma (Base de la palanca):</strong>
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>L<sub>Total</sub> = C<sub>2</sub> - C<sub>1</sub> = ${c2F} - ${c1F} = ${lenF}</em></span>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: rgba(0, 123, 255, 0.05); padding: 15px; border-radius: 6px; border-left: 4px solid var(--c1-color); margin-bottom: 10px; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                    <strong>2. Balance para la fase ${name1} (W<sub>C1</sub>):</strong><br>
+                    El porcentaje se calcula con la longitud de su brazo opuesto sobre la longitud total de la isoterma:
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>W<sub>C1</sub> = </em></span>
+                            <div class="html-fraction">
+                                <span class="html-numerator"><em>C<sub>2</sub> - C<sub>0</sub></em></span>
+                                <span class="html-denominator"><em>L<sub>Total</sub></em></span>
+                            </div>
+                            <span><em> &times; 100 = </em></span>
+                            <div class="html-fraction">
+                                <span class="html-numerator"><em>${c2F} - ${c0F}</em></span>
+                                <span class="html-denominator"><em>${lenF}</em></span>
+                            </div>
+                            <span><em> &times; 100 = <strong>${wC1.toFixed(1)}%</strong></em></span>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: rgba(255, 71, 87, 0.05); padding: 15px; border-radius: 6px; border-left: 4px solid var(--c2-color); border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                    <strong>3. Balance para la fase ${name2} (W<sub>C2</sub>):</strong><br>
+                    El porcentaje se calcula con la longitud de su brazo opuesto sobre la longitud total de la isoterma:
+                    <div class="html-equation-wrapper">
+                        <div class="html-equation-container">
+                            <span><em>W<sub>C2</sub> = </em></span>
+                            <div class="html-fraction">
+                                <span class="html-numerator"><em>C<sub>0</sub> - C<sub>1</sub></em></span>
+                                <span class="html-denominator"><em>L<sub>Total</sub></em></span>
+                            </div>
+                            <span><em> &times; 100 = </em></span>
+                            <div class="html-fraction">
+                                <span class="html-numerator"><em>${c0F} - ${c1F}</em></span>
+                                <span class="html-denominator"><em>${lenF}</em></span>
+                            </div>
+                            <span><em> &times; 100 = <strong>${wC2.toFixed(1)}%</strong></em></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('mathContent').innerHTML = mathHtml;
+            document.getElementById('mathFormulas').style.display = 'block';
+        }
+
+        function drawMass(x, y, weight, color, name) {
+            let radius = 10 + (weight * 0.3);
+            lCtx.beginPath();
+            lCtx.arc(x, y - radius, radius, 0, Math.PI*2);
+            lCtx.fillStyle = color;
+            lCtx.fill();
+            lCtx.strokeStyle = '#fff';
+            lCtx.lineWidth = 2;
+            lCtx.stroke();
+
+            lCtx.fillStyle = '#000';
+            lCtx.font = 'bold 12px sans-serif';
+            lCtx.textAlign = 'center';
+            lCtx.fillText(name, x, y - radius * 2 - 15);
+            lCtx.fillStyle = color;
+            lCtx.fillText(weight.toFixed(1) + "%", x, y - radius * 2 - 2);
+            lCtx.textAlign = 'left';
+        }
+
+        function resetSim() {
+            state = { mode: 'idle', calib: { p1: null, p2: null, ready: false }, points: { c0: null, c1: null, c2: null }, mouse: { x: 0, y: 0 }};
+            document.querySelectorAll('.panel .btn').forEach(b => b.classList.remove('active'));
+            lCtx.clearRect(0,0, leverCanvas.width, leverCanvas.height);
+            document.getElementById('resCompC1').innerText = "-";
+            document.getElementById('resCompC0').innerText = "-";
+            document.getElementById('resCompC2').innerText = "-";
+            document.getElementById('resFracC1').innerText = "-";
+            document.getElementById('resFracC2').innerText = "-";
+            
+            document.getElementById('mathFormulas').style.display = 'none';
+            document.getElementById('mathContent').innerHTML = '';
+            
+            draw();
+        }
+    </script>
+</body>
+</html>
